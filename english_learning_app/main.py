@@ -156,25 +156,25 @@ VOCABULARY = {
 }
 
 ENCOURAGEMENT_CORRECT = [
-    "!מצוין! כל הכבוד 🎉",
-    "!נכון! אתה כוכב 🌟",
-    "!יופי! המשך כך 💪",
-    "!בול! מדהים 🏆",
-    "!נהדר! אלוף 👑",
+    "!מצוינת! כל הכבוד 🎉",
+    "!נכון! את כוכבת 🌟",
+    "!יופי! המשיכי כך 💪",
+    "!בול! מדהימה 🏆",
+    "!נהדר! אלופה 👑",
 ]
 
 ENCOURAGEMENT_WRONG = [
     "לא נורא, ננסה שוב! 💪",
     "כמעט! בפעם הבאה 😊",
-    "!קרוב! אל תוותר 🌟",
+    "!קרוב! אל תוותרי 🌟",
 ]
 
 QUIZ_RESULTS_MESSAGES = {
-    "perfect": "🏆 מושלם! אתה גאון אנגלית!",
+    "perfect": "🏆 מושלם! את גאונית באנגלית!",
     "great": "🌟 מעולה! עבודה נהדרת!",
-    "good": "👏 יפה מאוד! ממשיכים להתקדם!",
+    "good": "👏 יפה מאוד! ממשיכות להתקדם!",
     "ok": "💪 !לא רע! עוד קצת תרגול",
-    "try_again": "😊 בוא ננסה שוב! תרגול עושה מושלם!",
+    "try_again": "😊 בואי ננסה שוב! תרגול עושה מושלם!",
 }
 
 # ──────────────────────────── Application ────────────────────────────
@@ -370,7 +370,7 @@ class EnglishLearningApp:
         if learned > 0:
             tk.Label(
                 self.root,
-                text=f"🌟 למדת {learned} מתוך {total_words} מילים",
+                text=f"🌟 למדת {learned} מתוך {total_words} מילים!",
                 font=("Arial", 14), bg=COLORS["bg"], fg=COLORS["light_text"],
             ).pack(pady=(30, 0))
 
@@ -380,7 +380,7 @@ class EnglishLearningApp:
         self._clear()
 
         mode_text = "לימוד מילים" if mode == "learn" else "חידון תרגום"
-        self._create_header(f"📂 בחר נושא", subtitle=mode_text)
+        self._create_header(f"📂 בחרי נושא", subtitle=mode_text)
 
         grid_frame = tk.Frame(self.root, bg=COLORS["bg"])
         grid_frame.pack(expand=True, pady=10)
@@ -497,7 +497,7 @@ class EnglishLearningApp:
             # Show "reveal" button
             tk.Frame(card, bg=COLORS["card"], height=15).pack()
             reveal_btn = self._make_button(
-                card, "👆 לחץ לראות תרגום", self._reveal_translation,
+                card, "👆 לחצי לראות תרגום", self._reveal_translation,
                 COLORS["warning"], font_size=16, padx=25, pady=10,
             )
             reveal_btn.pack(pady=(10, 20))
@@ -572,6 +572,12 @@ class EnglishLearningApp:
         # Header
         header = tk.Frame(self.root, bg=COLORS["bg"])
         header.pack(fill="x", padx=20, pady=(15, 5))
+
+        back_btn = self._make_button(
+            header, "⬅ חזרה", lambda: self._show_categories("quiz"),
+            COLORS["light_text"], font_size=11, padx=10, pady=5,
+        )
+        back_btn.pack(side="right")
 
         cat_display = "כל הנושאים" if self._quiz_category == "__all__" else self._quiz_category
         tk.Label(
@@ -768,7 +774,7 @@ class EnglishLearningApp:
         btn_frame.pack(pady=25)
 
         retry_btn = self._make_button(
-            btn_frame, "🔄 נסה שוב",
+            btn_frame, "🔄 נסי שוב",
             lambda: self._start_quiz(self._quiz_category),
             COLORS["success"], font_size=15, padx=20, pady=10,
         )
@@ -933,7 +939,7 @@ class EnglishLearningApp:
         # Reset button
         tk.Frame(scrollable, bg=COLORS["bg"], height=10).pack()
         reset_btn = self._make_button(
-            scrollable, "🗑 אפס התקדמות", self._confirm_reset,
+            scrollable, "🗑 אפסי התקדמות", self._confirm_reset,
             COLORS["danger"], font_size=12, padx=15, pady=6,
         )
         reset_btn.pack(pady=(5, 20))
@@ -952,7 +958,7 @@ class EnglishLearningApp:
         return ""
 
     def _confirm_reset(self):
-        if messagebox.askyesno("איפוס התקדמות", "?האם אתה בטוח שברצונך לאפס את כל ההתקדמות"):
+        if messagebox.askyesno("איפוס התקדמות", "?האם את בטוחה שברצונך לאפס את כל ההתקדמות"):
             self.progress = {}
             self._save_progress()
             self._show_progress()
