@@ -10,6 +10,9 @@ from tkinter import messagebox
 import json
 import random
 import os
+import subprocess
+import platform
+import threading
 
 # ──────────────────────────── Color Palette ────────────────────────────
 
@@ -262,6 +265,44 @@ class EnglishLearningApp:
         b = max(0, min(255, int(hex_color[4:6], 16) + amount))
         return f"#{r:02x}{g:02x}{b:02x}"
 
+    def _speak(self, text):
+        """Pronounce an English word using platform TTS in a background thread."""
+        def _do_speak():
+            system = platform.system()
+            try:
+                if system == "Darwin":
+                    subprocess.run(["say", text], timeout=10,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                elif system == "Windows":
+                    script = (
+                        "Add-Type -AssemblyName System.Speech;"
+                        "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer;"
+                        f"$s.Rate = -2; $s.Speak('{text}')"
+                    )
+                    subprocess.run(
+                        ["powershell", "-Command", script], timeout=10,
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                        creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+                    )
+                else:
+                    subprocess.run(["espeak", "-s", "130", text], timeout=10,
+                                   stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                return
+            except (FileNotFoundError, subprocess.CalledProcessError,
+                    subprocess.TimeoutExpired, OSError):
+                pass
+            # Fallback: pyttsx3 (if installed)
+            try:
+                import pyttsx3
+                engine = pyttsx3.init()
+                engine.setProperty("rate", 130)
+                engine.say(text)
+                engine.runAndWait()
+            except Exception:
+                pass
+
+        threading.Thread(target=_do_speak, daemon=True).start()
+
     def _create_header(self, title, subtitle=None):
         """Create a consistent header with a back button."""
         header = tk.Frame(self.root, bg=COLORS["bg"])
@@ -467,7 +508,14 @@ class EnglishLearningApp:
         tk.Label(
             card, text=english, font=("Arial", 52, "bold"),
             bg=COLORS["card"], fg=COLORS["primary"],
-        ).pack(pady=(40, 10))
+        ).pack(pady=(40, 5))
+
+        # Speak button
+        speak_btn = self._make_button(
+            card, "🔊 הקשיבי להגייה", lambda: self._speak(english),
+            COLORS["teal"], font_size=13, padx=15, pady=5,
+        )
+        speak_btn.pack(pady=(0, 10))
 
         # Phonetic hint - show first letter
         hint = f'"{english[0].upper()}" :האות הראשונה'
@@ -681,6 +729,14 @@ class EnglishLearningApp:
             font=("Arial", 16, "bold"), bg=COLORS["bg"], fg=color,
             justify="center",
         ).pack(pady=5)
+
+        # Speak the correct answer
+        speak_btn = self._make_button(
+            overlay, f"🔊 {correct_answer}",
+            lambda: self._speak(correct_answer),
+            COLORS["teal"], font_size=13, padx=12, pady=4,
+        )
+        speak_btn.pack(pady=(2, 5))
 
         idx = self._quiz_index
         total = len(self._quiz_words)
