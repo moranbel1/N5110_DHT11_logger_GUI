@@ -321,30 +321,60 @@
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
-            border-radius: 15px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: 700;
-            border: 2px solid rgba(255,255,255,0.2);
         }
 
+        /* LEGO brick front */
         .card-front {
-            background: linear-gradient(135deg, var(--card-color1), var(--card-color2));
+            background: var(--card-color1);
             font-size: 2.5rem;
             color: white;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border: 3px solid rgba(0,0,0,0.15);
+            border-top-color: rgba(255,255,255,0.3);
+            border-left-color: rgba(255,255,255,0.2);
+            box-shadow:
+                0 6px 0 rgba(0,0,0,0.2),
+                0 8px 15px rgba(0,0,0,0.3),
+                inset 0 -3px 6px rgba(0,0,0,0.15),
+                inset 0 3px 6px rgba(255,255,255,0.15);
+            overflow: hidden;
+        }
+
+        /* LEGO studs on front */
+        .card-front::before {
+            content: '';
+            position: absolute;
+            top: 12%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 55%;
+            height: 55%;
+            background:
+                radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 45%, transparent 50%) 0 0 / 50% 50%,
+                radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 45%, transparent 50%) 50% 0 / 50% 50%,
+                radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 45%, transparent 50%) 0 50% / 50% 50%,
+                radial-gradient(circle, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.08) 45%, transparent 50%) 50% 50% / 50% 50%;
+            background-repeat: no-repeat;
+            pointer-events: none;
         }
 
         .card-front::after {
             content: '?';
             font-family: 'Fredoka One', cursive;
-            font-size: 2.5rem;
-            color: rgba(255,255,255,0.8);
+            font-size: 2.2rem;
+            color: rgba(255,255,255,0.85);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            position: relative;
+            z-index: 1;
         }
 
+        /* LEGO brick back */
         .card-back {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            background: var(--back-color);
             transform: rotateY(180deg);
             font-size: 1rem;
             color: white;
@@ -353,18 +383,49 @@
             display: flex;
             flex-direction: column;
             gap: 5px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.4), inset 0 0 30px rgba(255,255,255,0.05);
+            border: 3px solid rgba(0,0,0,0.15);
+            border-top-color: rgba(255,255,255,0.3);
+            border-left-color: rgba(255,255,255,0.2);
+            box-shadow:
+                0 6px 0 rgba(0,0,0,0.2),
+                0 8px 15px rgba(0,0,0,0.3),
+                inset 0 -3px 6px rgba(0,0,0,0.15),
+                inset 0 3px 6px rgba(255,255,255,0.15);
+        }
+
+        /* LEGO studs on back (subtle) */
+        .card-back::before {
+            content: '';
+            position: absolute;
+            top: 5%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 50%;
+            background:
+                radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 50%) 0 0 / 50% 50%,
+                radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 50%) 50% 0 / 50% 50%,
+                radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 50%) 0 50% / 50% 50%,
+                radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 45%, transparent 50%) 50% 50% / 50% 50%;
+            background-repeat: no-repeat;
+            pointer-events: none;
+            opacity: 0.5;
         }
 
         .card-back .word {
             font-size: 1.2rem;
             font-weight: 900;
-            color: var(--card-color1);
+            color: white;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+            position: relative;
+            z-index: 1;
         }
 
         .card-back .translation {
             font-size: 0.85rem;
-            color: #a8a8d8;
+            color: rgba(255,255,255,0.75);
+            position: relative;
+            z-index: 1;
         }
 
         .card:hover:not(.flipped):not(.matched) .card-inner {
@@ -372,7 +433,11 @@
         }
 
         .card:hover:not(.flipped):not(.matched) .card-front {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            box-shadow:
+                0 6px 0 rgba(0,0,0,0.2),
+                0 12px 25px rgba(0,0,0,0.4),
+                inset 0 -3px 6px rgba(0,0,0,0.15),
+                inset 0 3px 6px rgba(255,255,255,0.15);
         }
 
         .card.matched .card-front {
@@ -381,7 +446,7 @@
 
         .card.matched .card-back {
             border-color: #2ecc71;
-            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5), 0 6px 0 rgba(0,0,0,0.2);
             animation: matchPop 0.5s ease;
         }
 
@@ -832,20 +897,36 @@
             },
         };
 
-        // Card color schemes
-        const cardColors = [
-            ['#ff6b6b', '#ee5a24'],
-            ['#feca57', '#f39c12'],
-            ['#48dbfb', '#0abde3'],
-            ['#ff9ff3', '#f368e0'],
-            ['#54a0ff', '#2e86de'],
-            ['#5f27cd', '#341f97'],
-            ['#01a3a4', '#00cec9'],
-            ['#e17055', '#d63031'],
-            ['#00b894', '#00a86b'],
-            ['#fdcb6e', '#e1b12c'],
-            ['#6c5ce7', '#a29bfe'],
-            ['#fd79a8', '#e84393'],
+        // LEGO brick colors - classic LEGO palette
+        const legoColors = [
+            '#E21A22', // Red
+            '#0057A8', // Blue
+            '#FAC80A', // Yellow
+            '#00852B', // Green
+            '#FF7E14', // Orange
+            '#D05098', // Dark Pink
+            '#00BCD9', // Medium Azure
+            '#9C01C6', // Purple
+            '#7DC240', // Lime Green
+            '#009ECE', // Dark Azure
+            '#F5C189', // Light Nougat
+            '#E95DA2', // Bright Pink
+        ];
+
+        // Colors for the back of flipped cards (different palette)
+        const legoBackColors = [
+            '#C41E3A', // Darker Red
+            '#1B4F92', // Darker Blue
+            '#2D7D46', // Forest Green
+            '#D35C00', // Burnt Orange
+            '#8B008B', // Dark Magenta
+            '#00838F', // Teal
+            '#6A1B9A', // Deep Purple
+            '#2E7D32', // Dark Green
+            '#AD1457', // Dark Pink
+            '#0277BD', // Dark Cyan
+            '#BF360C', // Deep Orange
+            '#4A148C', // Indigo
         ];
 
         // ============================================================
@@ -948,17 +1029,29 @@
             const shuffled = [...topic.words].sort(() => Math.random() - 0.5);
             const selectedWords = shuffled.slice(0, numPairs);
 
-            // Create card pairs (English + Hebrew)
+            // Create card pairs (English + Hebrew) with RANDOM colors
             let cards = [];
+            // Shuffle colors so each card gets a random front color
+            const shuffledFrontColors = [...legoColors].sort(() => Math.random() - 0.5);
+            const shuffledBackColors = [...legoBackColors].sort(() => Math.random() - 0.5);
+            let colorIdx = 0;
+
             selectedWords.forEach((word, index) => {
-                const colors = cardColors[index % cardColors.length];
+                // Each card gets its OWN random color - pairs don't share colors!
+                const enFront = shuffledFrontColors[colorIdx % shuffledFrontColors.length];
+                const enBack = shuffledBackColors[colorIdx % shuffledBackColors.length];
+                colorIdx++;
+                const heFront = shuffledFrontColors[colorIdx % shuffledFrontColors.length];
+                const heBack = shuffledBackColors[colorIdx % shuffledBackColors.length];
+                colorIdx++;
+
                 cards.push({
                     id: `en-${index}`,
                     pairId: index,
                     text: word.en,
                     subtext: 'English',
-                    color1: colors[0],
-                    color2: colors[1],
+                    frontColor: enFront,
+                    backColor: enBack,
                     type: 'en'
                 });
                 cards.push({
@@ -966,8 +1059,8 @@
                     pairId: index,
                     text: word.he,
                     subtext: 'עברית',
-                    color1: colors[0],
-                    color2: colors[1],
+                    frontColor: heFront,
+                    backColor: heBack,
                     type: 'he'
                 });
             });
@@ -1007,8 +1100,8 @@
                 cardEl.className = 'card';
                 cardEl.dataset.pairId = card.pairId;
                 cardEl.dataset.cardId = card.id;
-                cardEl.style.setProperty('--card-color1', card.color1);
-                cardEl.style.setProperty('--card-color2', card.color2);
+                cardEl.style.setProperty('--card-color1', card.frontColor);
+                cardEl.style.setProperty('--back-color', card.backColor);
 
                 cardEl.innerHTML = `
                     <div class="card-inner">
