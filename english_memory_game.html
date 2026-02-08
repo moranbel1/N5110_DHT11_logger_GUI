@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק זיכרון - COOL English</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;700;900&family=Fredoka+One&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            font-family: 'Rubik', sans-serif;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration) ease-in-out infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.5); }
+        }
+
+        /* Main container */
+        .container {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Title */
+        .title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 3rem;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #54a0ff);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 3s ease infinite;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: none;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .subtitle {
+            color: #a8a8d8;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            direction: ltr;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 10px 25px;
+            border-radius: 50px;
+            color: white;
+            font-size: 1.1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .stat span {
+            font-weight: 700;
+            color: #feca57;
+        }
+
+        /* Difficulty selector */
+        .difficulty-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+        }
+
+        .difficulty-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 40px;
+        }
+
+        .difficulty-buttons {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .diff-btn {
+            padding: 25px 50px;
+            font-size: 1.5rem;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-width: 200px;
+        }
+
+        .diff-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .diff-btn:hover::before {
+            left: 100%;
+        }
+
+        .diff-btn:hover {
+            transform: translateY(-5px) scale(1.05);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .diff-btn.normal {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+        }
+
+        .diff-btn.hard {
+            background: linear-gradient(135deg, #e67e22, #d35400);
+            box-shadow: 0 8px 25px rgba(230, 126, 34, 0.4);
+        }
+
+        .diff-btn.godlike {
+            background: linear-gradient(135deg, #e74c3c, #c0392b, #8e44ad);
+            box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4);
+            animation: godPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes godPulse {
+            0%, 100% { box-shadow: 0 8px 25px rgba(231, 76, 60, 0.4); }
+            50% { box-shadow: 0 8px 40px rgba(231, 76, 60, 0.8), 0 0 60px rgba(142, 68, 173, 0.4); }
+        }
+
+        .diff-desc {
+            font-size: 0.85rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-top: 5px;
+        }
+
+        /* Level selector */
+        .level-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 70vh;
+        }
+
+        .level-title {
+            font-family: 'Fredoka One', cursive;
+            font-size: 2rem;
+            color: white;
+            margin-bottom: 10px;
+        }
+
+        .level-subtitle {
+            color: #a8a8d8;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .level-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 600px;
+        }
+
+        .level-btn {
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-family: 'Rubik', sans-serif;
+            font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            background: rgba(255,255,255,0.1);
+            backdrop-filter: blur(5px);
+            min-width: 150px;
+        }
+
+        .level-btn:hover {
+            transform: translateY(-3px);
+            background: rgba(255,255,255,0.2);
+            border-color: #feca57;
+            color: #feca57;
+        }
+
+        .back-btn {
+            margin-top: 30px;
+            padding: 10px 30px;
+            font-size: 1rem;
+            font-family: 'Rubik', sans-serif;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            cursor: pointer;
+            color: #a8a8d8;
+            background: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            color: white;
+            border-color: white;
+        }
+
+        /* Game board */
+        .game-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        .board {
+            display: grid;
+            gap: 12px;
+            padding: 20px;
+            max-width: 900px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .board.normal {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 550px;
+        }
+
+        .board.hard {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 550px;
+        }
+
+        .board.godlike {
+            grid-template-columns: repeat(6, 1fr);
+            max-width: 800px;
+        }
+
+        /* Card */
+        .card {
+            aspect-ratio: 1;
+            perspective: 800px;
+            cursor: pointer;
+        }
+
+        .card-inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card.matched .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .card-front {
+            background: linear-gradient(135deg, var(--card-color1), var(--card-color2));
+            font-size: 2.5rem;
+            color: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .card-front::after {
+            content: '?';
+            font-family: 'Fredoka One', cursive;
+            font-size: 2.5rem;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .card-back {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            transform: rotateY(180deg);
+            font-size: 1rem;
+            color: white;
+            padding: 8px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4), inset 0 0 30px rgba(255,255,255,0.05);
+        }
+
+        .card-back .word {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--card-color1);
+        }
+
+        .card-back .translation {
+            font-size: 0.85rem;
+            color: #a8a8d8;
+        }
+
+        .card:hover:not(.flipped):not(.matched) .card-inner {
+            transform: rotateY(10deg);
+        }
+
+        .card:hover:not(.flipped):not(.matched) .card-front {
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .card.matched .card-front {
+            opacity: 0;
+        }
+
+        .card.matched .card-back {
+            border-color: #2ecc71;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.5);
+            animation: matchPop 0.5s ease;
+        }
+
+        @keyframes matchPop {
+            0% { transform: rotateY(180deg) scale(1); }
+            50% { transform: rotateY(180deg) scale(1.15); }
+            100% { transform: rotateY(180deg) scale(1); }
+        }
+
+        .card.wrong .card-back {
+            animation: shake 0.5s ease;
+            border-color: #e74c3c;
+            box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: rotateY(180deg) translateX(0); }
+            20% { transform: rotateY(180deg) translateX(-10px); }
+            40% { transform: rotateY(180deg) translateX(10px); }
+            60% { transform: rotateY(180deg) translateX(-10px); }
+            80% { transform: rotateY(180deg) translateX(5px); }
+        }
+
+        /* Timer */
+        .timer {
+            font-size: 1.3rem;
+            color: white;
+            font-weight: 700;
+            direction: ltr;
+        }
+
+        /* Victory screen */
+        .victory-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+            background: rgba(0, 0, 0, 0.9);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .victory-overlay.active {
+            display: flex;
+        }
+
+        .victory-text {
+            font-family: 'Fredoka One', cursive;
+            font-size: 5rem;
+            background: linear-gradient(45deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3, #ff6b6b);
+            background-size: 400% 400%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientShift 1s ease infinite, victoryBounce 0.5s ease infinite alternate;
+            z-index: 1002;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        @keyframes victoryBounce {
+            from { transform: scale(1) rotate(-2deg); }
+            to { transform: scale(1.1) rotate(2deg); }
+        }
+
+        .victory-stats {
+            color: white;
+            font-size: 1.5rem;
+            margin-top: 30px;
+            text-align: center;
+            z-index: 1002;
+            line-height: 2;
+        }
+
+        .victory-stats span {
+            color: #feca57;
+            font-weight: 700;
+        }
+
+        .play-again-btn {
+            margin-top: 40px;
+            padding: 15px 50px;
+            font-size: 1.5rem;
+            font-family: 'Fredoka One', cursive;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            z-index: 1002;
+            transition: all 0.3s ease;
+        }
+
+        .play-again-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(108, 92, 231, 0.5);
+        }
+
+        /* Explosion particles */
+        .particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1001;
+            border-radius: 50%;
+            animation: explode var(--duration) ease-out forwards;
+        }
+
+        @keyframes explode {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1) rotate(0deg);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0) rotate(720deg);
+            }
+        }
+
+        .firework {
+            position: fixed;
+            pointer-events: none;
+            z-index: 1001;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: firework-particle var(--duration) ease-out forwards;
+        }
+
+        @keyframes firework-particle {
+            0% {
+                opacity: 1;
+                transform: translate(0, 0) scale(1);
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+                transform: translate(var(--tx), var(--ty)) scale(0.3);
+            }
+        }
+
+        /* Screen shake */
+        .screen-shake {
+            animation: screenShake 0.8s ease;
+        }
+
+        @keyframes screenShake {
+            0%, 100% { transform: translate(0, 0) rotate(0); }
+            10% { transform: translate(-10px, -5px) rotate(-1deg); }
+            20% { transform: translate(10px, 5px) rotate(1deg); }
+            30% { transform: translate(-8px, 3px) rotate(-0.5deg); }
+            40% { transform: translate(8px, -3px) rotate(0.5deg); }
+            50% { transform: translate(-5px, 5px) rotate(-0.3deg); }
+            60% { transform: translate(5px, -5px) rotate(0.3deg); }
+            70% { transform: translate(-3px, 2px) rotate(-0.2deg); }
+            80% { transform: translate(3px, -2px) rotate(0.2deg); }
+        }
+
+        /* Flash effect */
+        .flash-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            z-index: 999;
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .flash-overlay.active {
+            animation: flash 0.5s ease-out forwards;
+        }
+
+        @keyframes flash {
+            0% { opacity: 0.9; }
+            100% { opacity: 0; }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .title { font-size: 2rem; }
+            .board.normal { grid-template-columns: repeat(3, 1fr); }
+            .board.hard { grid-template-columns: repeat(4, 1fr); }
+            .board.godlike { grid-template-columns: repeat(4, 1fr); }
+            .card-back .word { font-size: 0.9rem; }
+            .card-back .translation { font-size: 0.7rem; }
+            .diff-btn { padding: 20px 30px; font-size: 1.2rem; min-width: 160px; }
+            .victory-text { font-size: 3rem; }
+            .stats-bar { gap: 10px; flex-wrap: wrap; justify-content: center; }
+        }
+
+        /* Combo indicator */
+        .combo-popup {
+            position: fixed;
+            font-family: 'Fredoka One', cursive;
+            color: #feca57;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 100;
+            animation: comboFloat 1s ease-out forwards;
+            text-shadow: 0 0 20px rgba(254, 202, 87, 0.8);
+        }
+
+        @keyframes comboFloat {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-80px) scale(1.5); }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars" id="stars"></div>
+    <div class="flash-overlay" id="flashOverlay"></div>
+
+    <div class="container" id="mainContainer">
+        <h1 class="title">COOL Memory Game</h1>
+        <p class="subtitle">משחק זיכרון ללימוד אנגלית - כיתה ו׳</p>
+
+        <!-- Difficulty Selection -->
+        <div class="difficulty-screen" id="difficultyScreen">
+            <h2 class="difficulty-title">בחר רמת קושי</h2>
+            <div class="difficulty-buttons">
+                <button class="diff-btn normal" onclick="selectDifficulty('normal')">
+                    רגיל
+                    <div class="diff-desc">12 קלפים / 6 זוגות</div>
+                </button>
+                <button class="diff-btn hard" onclick="selectDifficulty('hard')">
+                    קשה
+                    <div class="diff-desc">16 קלפים / 8 זוגות</div>
+                </button>
+                <button class="diff-btn godlike" onclick="selectDifficulty('godlike')">
+                    אלוהי
+                    <div class="diff-desc">24 קלפים / 12 זוגות</div>
+                </button>
+            </div>
+        </div>
+
+        <!-- Level Selection -->
+        <div class="level-screen" id="levelScreen">
+            <h2 class="level-title" id="levelTitle">בחר שלב</h2>
+            <p class="level-subtitle" id="levelSubtitle"></p>
+            <div class="level-buttons" id="levelButtons"></div>
+            <button class="back-btn" onclick="goBack()">חזרה</button>
+        </div>
+
+        <!-- Game Screen -->
+        <div class="game-screen" id="gameScreen">
+            <div class="stats-bar">
+                <div class="stat">Moves: <span id="moveCount">0</span></div>
+                <div class="stat">Pairs: <span id="pairCount">0</span>/<span id="totalPairs">0</span></div>
+                <div class="stat timer" id="timer">00:00</div>
+                <div class="stat">Combo: <span id="comboCount">0</span>x</div>
+            </div>
+            <div class="board" id="board"></div>
+            <button class="back-btn" style="margin-top:15px" onclick="goBack()">חזרה לתפריט</button>
+        </div>
+    </div>
+
+    <!-- Victory Overlay -->
+    <div class="victory-overlay" id="victoryOverlay">
+        <div class="victory-text" id="victoryText">!אתה מטורף</div>
+        <div class="victory-stats" id="victoryStats"></div>
+        <button class="play-again-btn" onclick="playAgain()">שחק שוב!</button>
+    </div>
+
+    <script>
+        // ============================================================
+        // VOCABULARY DATA - Based on COOL Textbook Parts 1 & 2
+        // ============================================================
+        const vocabulary = {
+            // COOL Part 1 - Unit themes
+            "school": {
+                name: "School Life - בית ספר",
+                words: [
+                    { en: "Teacher", he: "מורה" },
+                    { en: "Student", he: "תלמיד" },
+                    { en: "Homework", he: "שיעורי בית" },
+                    { en: "Classroom", he: "כיתה" },
+                    { en: "Subject", he: "מקצוע" },
+                    { en: "Schedule", he: "מערכת שעות" },
+                    { en: "Notebook", he: "מחברת" },
+                    { en: "Pencil", he: "עיפרון" },
+                    { en: "Eraser", he: "מחק" },
+                    { en: "Library", he: "ספרייה" },
+                    { en: "Recess", he: "הפסקה" },
+                    { en: "Exam", he: "מבחן" },
+                ]
+            },
+            "family": {
+                name: "Family & Friends - משפחה וחברים",
+                words: [
+                    { en: "Parents", he: "הורים" },
+                    { en: "Brother", he: "אח" },
+                    { en: "Sister", he: "אחות" },
+                    { en: "Cousin", he: "בן דוד" },
+                    { en: "Neighbor", he: "שכן" },
+                    { en: "Friend", he: "חבר" },
+                    { en: "Together", he: "ביחד" },
+                    { en: "Birthday", he: "יום הולדת" },
+                    { en: "Daughter", he: "בת" },
+                    { en: "Grandma", he: "סבתא" },
+                    { en: "Uncle", he: "דוד" },
+                    { en: "Family", he: "משפחה" },
+                ]
+            },
+            "food": {
+                name: "Food & Meals - אוכל",
+                words: [
+                    { en: "Breakfast", he: "ארוחת בוקר" },
+                    { en: "Lunch", he: "ארוחת צהריים" },
+                    { en: "Dinner", he: "ארוחת ערב" },
+                    { en: "Healthy", he: "בריא" },
+                    { en: "Delicious", he: "טעים" },
+                    { en: "Recipe", he: "מתכון" },
+                    { en: "Kitchen", he: "מטבח" },
+                    { en: "Hungry", he: "רעב" },
+                    { en: "Thirsty", he: "צמא" },
+                    { en: "Vegetable", he: "ירק" },
+                    { en: "Fruit", he: "פרי" },
+                    { en: "Sandwich", he: "כריך" },
+                ]
+            },
+            "hobbies": {
+                name: "Hobbies & Sports - תחביבים",
+                words: [
+                    { en: "Swimming", he: "שחייה" },
+                    { en: "Dancing", he: "ריקוד" },
+                    { en: "Reading", he: "קריאה" },
+                    { en: "Drawing", he: "ציור" },
+                    { en: "Playing", he: "משחק" },
+                    { en: "Running", he: "ריצה" },
+                    { en: "Singing", he: "שירה" },
+                    { en: "Cooking", he: "בישול" },
+                    { en: "Soccer", he: "כדורגל" },
+                    { en: "Basketball", he: "כדורסל" },
+                    { en: "Practice", he: "תרגול" },
+                    { en: "Winner", he: "מנצח" },
+                ]
+            },
+            // COOL Part 2 - Unit themes
+            "animals": {
+                name: "Animals & Nature - חיות וטבע",
+                words: [
+                    { en: "Dolphin", he: "דולפין" },
+                    { en: "Elephant", he: "פיל" },
+                    { en: "Butterfly", he: "פרפר" },
+                    { en: "Penguin", he: "פינגווין" },
+                    { en: "Dangerous", he: "מסוכן" },
+                    { en: "Forest", he: "יער" },
+                    { en: "Ocean", he: "אוקיינוס" },
+                    { en: "Mountain", he: "הר" },
+                    { en: "Desert", he: "מדבר" },
+                    { en: "Parrot", he: "תוכי" },
+                    { en: "Turtle", he: "צב" },
+                    { en: "Giraffe", he: "ג׳ירפה" },
+                ]
+            },
+            "travel": {
+                name: "Travel & Places - טיולים",
+                words: [
+                    { en: "Airport", he: "שדה תעופה" },
+                    { en: "Journey", he: "מסע" },
+                    { en: "Suitcase", he: "מזוודה" },
+                    { en: "Passport", he: "דרכון" },
+                    { en: "Tourist", he: "תייר" },
+                    { en: "Museum", he: "מוזיאון" },
+                    { en: "Hotel", he: "מלון" },
+                    { en: "Country", he: "מדינה" },
+                    { en: "Exciting", he: "מרגש" },
+                    { en: "Vacation", he: "חופשה" },
+                    { en: "Map", he: "מפה" },
+                    { en: "Ticket", he: "כרטיס" },
+                ]
+            },
+            "feelings": {
+                name: "Feelings & Emotions - רגשות",
+                words: [
+                    { en: "Happy", he: "שמח" },
+                    { en: "Excited", he: "נרגש" },
+                    { en: "Worried", he: "מודאג" },
+                    { en: "Surprised", he: "מופתע" },
+                    { en: "Brave", he: "אמיץ" },
+                    { en: "Proud", he: "גאה" },
+                    { en: "Scared", he: "מפוחד" },
+                    { en: "Nervous", he: "עצבני" },
+                    { en: "Lonely", he: "בודד" },
+                    { en: "Jealous", he: "קנאי" },
+                    { en: "Angry", he: "כועס" },
+                    { en: "Confused", he: "מבולבל" },
+                ]
+            },
+            "technology": {
+                name: "Technology & Media - טכנולוגיה",
+                words: [
+                    { en: "Computer", he: "מחשב" },
+                    { en: "Internet", he: "אינטרנט" },
+                    { en: "Message", he: "הודעה" },
+                    { en: "Website", he: "אתר" },
+                    { en: "Password", he: "סיסמה" },
+                    { en: "Download", he: "הורדה" },
+                    { en: "Screen", he: "מסך" },
+                    { en: "Keyboard", he: "מקלדת" },
+                    { en: "Camera", he: "מצלמה" },
+                    { en: "Speaker", he: "רמקול" },
+                    { en: "Battery", he: "סוללה" },
+                    { en: "Robot", he: "רובוט" },
+                ]
+            },
+            "clothes": {
+                name: "Clothes & Shopping - ביגוד וקניות",
+                words: [
+                    { en: "Jacket", he: "ז׳קט" },
+                    { en: "Sweater", he: "סוודר" },
+                    { en: "Sneakers", he: "נעלי ספורט" },
+                    { en: "Uniform", he: "מדים" },
+                    { en: "Fashion", he: "אופנה" },
+                    { en: "Shopping", he: "קניות" },
+                    { en: "Expensive", he: "יקר" },
+                    { en: "Cheap", he: "זול" },
+                    { en: "Size", he: "מידה" },
+                    { en: "Store", he: "חנות" },
+                    { en: "Pocket", he: "כיס" },
+                    { en: "Glasses", he: "משקפיים" },
+                ]
+            },
+            "health": {
+                name: "Health & Body - בריאות",
+                words: [
+                    { en: "Exercise", he: "תרגיל" },
+                    { en: "Medicine", he: "תרופה" },
+                    { en: "Doctor", he: "רופא" },
+                    { en: "Hospital", he: "בית חולים" },
+                    { en: "Headache", he: "כאב ראש" },
+                    { en: "Strong", he: "חזק" },
+                    { en: "Stomach", he: "בטן" },
+                    { en: "Energy", he: "אנרגיה" },
+                    { en: "Sleep", he: "שינה" },
+                    { en: "Vitamins", he: "ויטמינים" },
+                    { en: "Muscle", he: "שריר" },
+                    { en: "Breath", he: "נשימה" },
+                ]
+            },
+        };
+
+        // Card color schemes
+        const cardColors = [
+            ['#ff6b6b', '#ee5a24'],
+            ['#feca57', '#f39c12'],
+            ['#48dbfb', '#0abde3'],
+            ['#ff9ff3', '#f368e0'],
+            ['#54a0ff', '#2e86de'],
+            ['#5f27cd', '#341f97'],
+            ['#01a3a4', '#00cec9'],
+            ['#e17055', '#d63031'],
+            ['#00b894', '#00a86b'],
+            ['#fdcb6e', '#e1b12c'],
+            ['#6c5ce7', '#a29bfe'],
+            ['#fd79a8', '#e84393'],
+        ];
+
+        // ============================================================
+        // GAME STATE
+        // ============================================================
+        let currentDifficulty = '';
+        let currentTopic = '';
+        let pairCount = 0;
+        let totalPairsNeeded = 0;
+        let flippedCards = [];
+        let matchedPairs = 0;
+        let moves = 0;
+        let combo = 0;
+        let maxCombo = 0;
+        let isLocked = false;
+        let timerInterval = null;
+        let seconds = 0;
+        let gameActive = false;
+
+        const pairsPerDifficulty = {
+            normal: 6,
+            hard: 8,
+            godlike: 12,
+        };
+
+        // ============================================================
+        // INITIALIZATION
+        // ============================================================
+        function init() {
+            createStars();
+            showDifficultyScreen();
+        }
+
+        function createStars() {
+            const starsContainer = document.getElementById('stars');
+            for (let i = 0; i < 80; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                const size = Math.random() * 3 + 1;
+                star.style.width = size + 'px';
+                star.style.height = size + 'px';
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.animationDelay = Math.random() * 5 + 's';
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // ============================================================
+        // SCREEN MANAGEMENT
+        // ============================================================
+        function showDifficultyScreen() {
+            document.getElementById('difficultyScreen').style.display = 'flex';
+            document.getElementById('levelScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'none';
+        }
+
+        function selectDifficulty(diff) {
+            currentDifficulty = diff;
+            showLevelScreen();
+        }
+
+        function showLevelScreen() {
+            document.getElementById('difficultyScreen').style.display = 'none';
+            document.getElementById('levelScreen').style.display = 'flex';
+            document.getElementById('gameScreen').style.display = 'none';
+
+            const diffNames = { normal: 'רגיל', hard: 'קשה', godlike: 'אלוהי' };
+            document.getElementById('levelTitle').textContent = `רמה: ${diffNames[currentDifficulty]}`;
+            document.getElementById('levelSubtitle').textContent = 'בחר נושא לתרגול:';
+
+            const container = document.getElementById('levelButtons');
+            container.innerHTML = '';
+
+            Object.entries(vocabulary).forEach(([key, topic]) => {
+                const btn = document.createElement('button');
+                btn.className = 'level-btn';
+                btn.textContent = topic.name;
+                btn.onclick = () => startGame(key);
+                container.appendChild(btn);
+            });
+        }
+
+        function goBack() {
+            stopTimer();
+            gameActive = false;
+            showDifficultyScreen();
+        }
+
+        // ============================================================
+        // GAME LOGIC
+        // ============================================================
+        function startGame(topicKey) {
+            currentTopic = topicKey;
+            const topic = vocabulary[topicKey];
+            const numPairs = pairsPerDifficulty[currentDifficulty];
+
+            // Shuffle and pick words
+            const shuffled = [...topic.words].sort(() => Math.random() - 0.5);
+            const selectedWords = shuffled.slice(0, numPairs);
+
+            // Create card pairs (English + Hebrew)
+            let cards = [];
+            selectedWords.forEach((word, index) => {
+                const colors = cardColors[index % cardColors.length];
+                cards.push({
+                    id: `en-${index}`,
+                    pairId: index,
+                    text: word.en,
+                    subtext: 'English',
+                    color1: colors[0],
+                    color2: colors[1],
+                    type: 'en'
+                });
+                cards.push({
+                    id: `he-${index}`,
+                    pairId: index,
+                    text: word.he,
+                    subtext: 'עברית',
+                    color1: colors[0],
+                    color2: colors[1],
+                    type: 'he'
+                });
+            });
+
+            // Shuffle cards
+            cards = cards.sort(() => Math.random() - 0.5);
+
+            // Reset state
+            matchedPairs = 0;
+            moves = 0;
+            combo = 0;
+            maxCombo = 0;
+            flippedCards = [];
+            isLocked = false;
+            totalPairsNeeded = numPairs;
+            seconds = 0;
+
+            // Update UI
+            document.getElementById('moveCount').textContent = '0';
+            document.getElementById('pairCount').textContent = '0';
+            document.getElementById('totalPairs').textContent = numPairs;
+            document.getElementById('comboCount').textContent = '0';
+            document.getElementById('timer').textContent = '00:00';
+
+            // Show game screen
+            document.getElementById('difficultyScreen').style.display = 'none';
+            document.getElementById('levelScreen').style.display = 'none';
+            document.getElementById('gameScreen').style.display = 'flex';
+
+            // Build board
+            const board = document.getElementById('board');
+            board.className = `board ${currentDifficulty}`;
+            board.innerHTML = '';
+
+            cards.forEach(card => {
+                const cardEl = document.createElement('div');
+                cardEl.className = 'card';
+                cardEl.dataset.pairId = card.pairId;
+                cardEl.dataset.cardId = card.id;
+                cardEl.style.setProperty('--card-color1', card.color1);
+                cardEl.style.setProperty('--card-color2', card.color2);
+
+                cardEl.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front"></div>
+                        <div class="card-back">
+                            <div class="word">${card.text}</div>
+                            <div class="translation">${card.subtext}</div>
+                        </div>
+                    </div>
+                `;
+
+                cardEl.addEventListener('click', () => flipCard(cardEl));
+                board.appendChild(cardEl);
+            });
+
+            // Start timer
+            startTimer();
+            gameActive = true;
+        }
+
+        function flipCard(card) {
+            if (isLocked) return;
+            if (card.classList.contains('flipped')) return;
+            if (card.classList.contains('matched')) return;
+            if (flippedCards.length >= 2) return;
+
+            card.classList.add('flipped');
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                moves++;
+                document.getElementById('moveCount').textContent = moves;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [card1, card2] = flippedCards;
+            const match = card1.dataset.pairId === card2.dataset.pairId;
+
+            if (match) {
+                combo++;
+                if (combo > maxCombo) maxCombo = combo;
+                document.getElementById('comboCount').textContent = combo;
+
+                // Show combo popup
+                if (combo >= 2) {
+                    showComboPopup(combo);
+                }
+
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                matchedPairs++;
+                document.getElementById('pairCount').textContent = matchedPairs;
+                flippedCards = [];
+
+                // Create small sparkle on match
+                createMatchSparkle(card1);
+                createMatchSparkle(card2);
+
+                if (matchedPairs === totalPairsNeeded) {
+                    setTimeout(() => victory(), 600);
+                }
+            } else {
+                combo = 0;
+                document.getElementById('comboCount').textContent = '0';
+                isLocked = true;
+                card1.classList.add('wrong');
+                card2.classList.add('wrong');
+
+                setTimeout(() => {
+                    card1.classList.remove('flipped', 'wrong');
+                    card2.classList.remove('flipped', 'wrong');
+                    flippedCards = [];
+                    isLocked = false;
+                }, 1000);
+            }
+        }
+
+        // ============================================================
+        // TIMER
+        // ============================================================
+        function startTimer() {
+            stopTimer();
+            seconds = 0;
+            timerInterval = setInterval(() => {
+                seconds++;
+                const mins = String(Math.floor(seconds / 60)).padStart(2, '0');
+                const secs = String(seconds % 60).padStart(2, '0');
+                document.getElementById('timer').textContent = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        // ============================================================
+        // VICTORY - EXPLOSION!
+        // ============================================================
+        function victory() {
+            stopTimer();
+            gameActive = false;
+
+            // Screen shake
+            document.getElementById('mainContainer').classList.add('screen-shake');
+
+            // Flash
+            const flash = document.getElementById('flashOverlay');
+            flash.classList.add('active');
+            setTimeout(() => flash.classList.remove('active'), 500);
+
+            // Create massive explosion
+            setTimeout(() => {
+                createExplosion();
+                createFireworks();
+            }, 200);
+
+            // Show victory screen
+            setTimeout(() => {
+                const overlay = document.getElementById('victoryOverlay');
+                overlay.classList.add('active');
+
+                // Set victory text based on difficulty
+                const victoryTexts = {
+                    normal: '!אתה מטורף',
+                    hard: '!!אתה מטורף לגמרי',
+                    godlike: '!!!אתה אלוהים של זיכרון'
+                };
+                document.getElementById('victoryText').textContent = victoryTexts[currentDifficulty];
+
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                const timeStr = mins > 0 ? `${mins} דקות ו-${secs} שניות` : `${secs} שניות`;
+
+                const starsRating = getStars();
+
+                document.getElementById('victoryStats').innerHTML = `
+                    ${starsRating}<br>
+                    זמן: <span>${timeStr}</span><br>
+                    מהלכים: <span>${moves}</span><br>
+                    קומבו מקסימלי: <span>${maxCombo}x</span>
+                `;
+
+                // Continue fireworks
+                const fwInterval = setInterval(() => {
+                    if (!overlay.classList.contains('active')) {
+                        clearInterval(fwInterval);
+                        return;
+                    }
+                    createFireworks();
+                }, 1500);
+            }, 800);
+
+            setTimeout(() => {
+                document.getElementById('mainContainer').classList.remove('screen-shake');
+            }, 1000);
+        }
+
+        function getStars() {
+            const optimal = totalPairsNeeded;
+            const ratio = moves / optimal;
+            let stars;
+            if (ratio <= 1.5) stars = 3;
+            else if (ratio <= 2.5) stars = 2;
+            else stars = 1;
+
+            const starEmojis = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+            return `<span style="font-size:2.5rem">${starEmojis}</span>`;
+        }
+
+        function createExplosion() {
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd',
+                           '#01a3a4', '#e17055', '#00b894', '#fdcb6e', '#6c5ce7', '#fd79a8',
+                           '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'];
+
+            // Explode from all matched cards
+            const cards = document.querySelectorAll('.card.matched');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                const cx = rect.left + rect.width / 2;
+                const cy = rect.top + rect.height / 2;
+
+                for (let i = 0; i < 12; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    const size = Math.random() * 20 + 8;
+                    particle.style.width = size + 'px';
+                    particle.style.height = size + 'px';
+                    particle.style.left = cx + 'px';
+                    particle.style.top = cy + 'px';
+                    particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                    const angle = Math.random() * Math.PI * 2;
+                    const distance = Math.random() * 300 + 100;
+                    const tx = Math.cos(angle) * distance;
+                    const ty = Math.sin(angle) * distance;
+                    const duration = Math.random() * 1 + 0.8;
+
+                    particle.style.setProperty('--tx', tx + 'px');
+                    particle.style.setProperty('--ty', ty + 'px');
+                    particle.style.setProperty('--duration', duration + 's');
+
+                    document.body.appendChild(particle);
+                    setTimeout(() => particle.remove(), duration * 1000);
+                }
+            });
+
+            // Center explosion
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                const size = Math.random() * 25 + 10;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = window.innerWidth / 2 + 'px';
+                particle.style.top = window.innerHeight / 2 + 'px';
+                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.boxShadow = `0 0 ${size}px ${particle.style.background}`;
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 500 + 200;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance;
+                const duration = Math.random() * 1.5 + 1;
+
+                particle.style.setProperty('--tx', tx + 'px');
+                particle.style.setProperty('--ty', ty + 'px');
+                particle.style.setProperty('--duration', duration + 's');
+
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), duration * 1000);
+            }
+        }
+
+        function createFireworks() {
+            const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff',
+                           '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6', '#00b894'];
+
+            for (let fw = 0; fw < 5; fw++) {
+                setTimeout(() => {
+                    const cx = Math.random() * window.innerWidth;
+                    const cy = Math.random() * window.innerHeight * 0.6 + 50;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+
+                    for (let i = 0; i < 30; i++) {
+                        const p = document.createElement('div');
+                        p.className = 'firework';
+                        p.style.left = cx + 'px';
+                        p.style.top = cy + 'px';
+                        p.style.background = color;
+                        p.style.boxShadow = `0 0 6px ${color}`;
+
+                        const angle = (i / 30) * Math.PI * 2;
+                        const distance = Math.random() * 120 + 60;
+                        const tx = Math.cos(angle) * distance;
+                        const ty = Math.sin(angle) * distance;
+                        const duration = Math.random() * 0.8 + 0.8;
+
+                        p.style.setProperty('--tx', tx + 'px');
+                        p.style.setProperty('--ty', ty + 'px');
+                        p.style.setProperty('--duration', duration + 's');
+
+                        document.body.appendChild(p);
+                        setTimeout(() => p.remove(), duration * 1000);
+                    }
+                }, fw * 400);
+            }
+        }
+
+        function createMatchSparkle(card) {
+            const rect = card.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+            const colors = ['#feca57', '#2ecc71', '#48dbfb'];
+
+            for (let i = 0; i < 8; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                const size = Math.random() * 8 + 4;
+                p.style.width = size + 'px';
+                p.style.height = size + 'px';
+                p.style.left = cx + 'px';
+                p.style.top = cy + 'px';
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * 60 + 30;
+                p.style.setProperty('--tx', Math.cos(angle) * dist + 'px');
+                p.style.setProperty('--ty', Math.sin(angle) * dist + 'px');
+                p.style.setProperty('--duration', '0.6s');
+
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 600);
+            }
+        }
+
+        function showComboPopup(comboNum) {
+            const popup = document.createElement('div');
+            popup.className = 'combo-popup';
+            popup.textContent = `COMBO x${comboNum}!`;
+            popup.style.left = (window.innerWidth / 2 - 80) + 'px';
+            popup.style.top = (window.innerHeight / 2 - 100) + 'px';
+
+            if (comboNum >= 4) {
+                popup.style.color = '#ff6b6b';
+                popup.style.fontSize = '3rem';
+                popup.textContent = `SUPER COMBO x${comboNum}!!`;
+            }
+
+            document.body.appendChild(popup);
+            setTimeout(() => popup.remove(), 1000);
+        }
+
+        function playAgain() {
+            document.getElementById('victoryOverlay').classList.remove('active');
+            // Clean up particles
+            document.querySelectorAll('.particle, .firework').forEach(p => p.remove());
+            showDifficultyScreen();
+        }
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        window.onload = init;
+    </script>
+</body>
+</html>
